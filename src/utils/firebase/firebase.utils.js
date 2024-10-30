@@ -6,6 +6,8 @@ import {
     GoogleAuthProvider,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
     
 } from 'firebase/auth'
 
@@ -29,14 +31,14 @@ const firebaseConfig = {
   // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 
-const provider = new GoogleAuthProvider();
+const googleProvider = new GoogleAuthProvider();
 
-provider.setCustomParameters({
+googleProvider.setCustomParameters({
     prompt: "select_account"
 });
 
 export const auth = getAuth();
-export const signInWithGooglePopup = () => signInWithPopup(auth,provider);
+export const signInWithGooglePopup = () => signInWithPopup(auth,googleProvider);
 
 export const db = getFirestore();
 
@@ -48,11 +50,8 @@ export const createUserDocumentFromAuth = async (
     
     const userDocRef = doc(db, 'users', userAuth.uid);
 
-    console.log(userDocRef);
 
     const userSnapshot = await getDoc(userDocRef);
-    console.log(userSnapshot);
-    console.log(userSnapshot.exists());
 
     if(!userSnapshot.exists()){
         const { displayName, email } = userAuth;
@@ -66,6 +65,7 @@ export const createUserDocumentFromAuth = async (
                 ...additionalInformation,
             });
         }catch (error){
+            console.log('error creating the user', error.message)
 
         }
     }
@@ -84,3 +84,7 @@ export const signInAuthUserWithEmailAndPassword = async (email,password) => {
     
     return await signInWithEmailAndPassword(auth, email, password);
 };
+
+export const signOutUser = async () => await signOut(auth);
+
+export const onAuthStateChangedListener = (callback) => onAuthStateChanged(auth, callback );
